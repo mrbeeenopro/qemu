@@ -18,13 +18,13 @@ RUN git clone https://github.com/h3l2f/noVNC1 /opt/novnc \
     && cd /opt/novnc \
     && cp vnc.html index.html
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod 755 /entrypoint.sh
+
 RUN useradd -m -d /home/container container
 USER container
 
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
-
-COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 CMD ["/bin/bash", "/entrypoint.sh"]
