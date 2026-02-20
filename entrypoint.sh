@@ -14,5 +14,6 @@ sleep 2
 cd /opt/novnc
 
 ./utils/websockify/run \
+  --web /opt/novnc \
   0.0.0.0:${SERVER_PORT} \
   localhost:${VNC_PORT}
