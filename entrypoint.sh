@@ -13,6 +13,6 @@ sleep 2
 
 cd /opt/novnc
 
-./utils/novnc_proxy \
-  --vnc localhost:${VNC_PORT} \
-  --listen 0.0.0.0:${SERVER_PORT}
+./utils/websockify/run \
+  0.0.0.0:${SERVER_PORT} \
+  localhost:${VNC_PORT}
