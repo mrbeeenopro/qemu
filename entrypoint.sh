@@ -1,6 +1,10 @@
 #!/bin/bash
 cd /home/container
 
+# Fix QEMU temp write
+export TMPDIR=/home/container/tmp
+mkdir -p $TMPDIR
+
 VNC_PORT=5901
 
 echo "[+] QEMU VNC :1 → 5901"
