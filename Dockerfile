@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
     ca-certificates \
     python3 \
     git \
+    python3-numpy \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
