@@ -3,19 +3,28 @@ FROM debian:bookworm-slim
 RUN apt update && apt install -y \
     qemu-system-x86 \
     qemu-utils \
+    qemu-efi-aarch64 \
+    qemu-system-arm \
     iproute2 \
     net-tools \
     curl \
     ca-certificates \
+    python3 \
+    git \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -d /home/container container
+RUN git clone https://github.com/h3l2f/noVNC1 /opt/novnc \
+    && cd /opt/novnc \
+    && cp vnc.html index.html
 
+RUN useradd -m -d /home/container container
 USER container
+
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
 COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 CMD ["/bin/bash", "/entrypoint.sh"]
