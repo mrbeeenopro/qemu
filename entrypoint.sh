@@ -32,7 +32,7 @@ cd /opt/novnc
 
 
 sleep 2
--
+
 cd /home/container
 echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
 
