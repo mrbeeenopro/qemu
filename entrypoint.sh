@@ -1,18 +1,14 @@
 #!/bin/bash
 
-# --- 1. Define ANSI Color Codes ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
+NC='\033[0m' 
 
 echo -e "${GREEN}[+] Initializing environment..."
 
 cd /home/container
-
-# Fix QEMU temp write
 export TMPDIR=/home/container/tmp
 mkdir -p $TMPDIR
 
@@ -30,9 +26,19 @@ cd /opt/novnc
   0.0.0.0:${SERVER_PORT} \
   localhost:${VNC_PORT} > /dev/null 2>&1 &
 
+if [ "$USE_CLOUDFLARE" = "true" ]; then
+    echo -e "${CYAN}[+] Starting TryCloudflare Tunnel...${NC}"
+    cloudflared tunnel --url http://localhost:${SERVER_PORT} --no-autoupdate > /home/container/cloudflare.log 2>&1 &
+    
+    sleep 5
+    CF_URL=$(grep -o 'https://[-0-9a-z]*\.trycloudflare.com' /home/container/cloudflare.log)
+    echo -e "${YELLOW}--------------------------------------------------${NC}"
+    echo -e "${GREEN}your web Tunnel is live!${NC}"
+    echo -e "${CYAN}URL: ${CF_URL}${NC}"
+    echo -e "${YELLOW}--------------------------------------------------${NC}"
+fi
 
 sleep 2
-
 cd /home/container
 echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
 
