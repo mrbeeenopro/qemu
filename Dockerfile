@@ -11,9 +11,17 @@ RUN apt update && apt install -y \
     git \
     telnet \
     python3-numpy \
+    wget \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then CF_ARCH="amd64"; \
+    elif [ "$ARCH" = "arm64" ]; then CF_ARCH="arm64"; \
+    elif [ "$ARCH" = "armhf" ]; then CF_ARCH="arm"; \
+    else CF_ARCH="amd64"; fi && \
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$CF_ARCH -O /usr/local/bin/cloudflared && \
+    chmod +x /usr/local/bin/cloudflared
 
 RUN git clone https://github.com/h3l2f/noVNC1 /opt/novnc \
     && git clone https://github.com/novnc/websockify /opt/novnc/utils/websockify \
