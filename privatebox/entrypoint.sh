@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' 
-
+USE_CLOUDFLARE=true
 echo -e "${GREEN}[+] Initializing environment..."
 
 cd /home/container
@@ -23,36 +23,25 @@ cd /opt/novnc
 
 ./utils/websockify/run \
   --web /opt/novnc \
-  0.0.0.0:6080 \
+  localhost:6080 \
   localhost:${VNC_PORT} > /dev/null 2>&1 &
 
-# --- Khởi động Cloudflare Tunnel trực tiếp ---
-echo -e "${CYAN}[+] Starting TryCloudflare Tunnel...${NC}"
-rm -f /home/container/cloudflare.log
-
-# Chạy tunnel trỏ vào port của noVNC
-cloudflared tunnel --url http://127.0.0.1:6080 --no-autoupdate > /home/container/cloudflare.log 2>&1 &
-
-# Vòng lặp chờ lấy URL (tối đa 30 giây)
-echo -n -e "${YELLOW}[+] Waiting for Cloudflare URL...${NC}"
-for i in {1..30}; do
+if [ "$USE_CLOUDFLARE" = "true" ]; then
+    echo -e "${CYAN}[+] Starting TryCloudflare Tunnel...${NC}"
+    cloudflared tunnel --url http://localhost:6080 --no-autoupdate > /home/container/cloudflare.log 2>&1 &
+    
+    sleep 5
     CF_URL=$(grep -o 'https://[-0-9a-z]*\.trycloudflare.com' /home/container/cloudflare.log)
-    if [ ! -z "$CF_URL" ]; then
-        echo -e "\n${YELLOW}--------------------------------------------------${NC}"
-        echo -e "${GREEN}Your Web Tunnel is live!${NC}"
-        echo -e "${CYAN}URL: ${CF_URL}${NC}"
-        echo -e "${YELLOW}--------------------------------------------------${NC}"
-        break
-    fi
-    echo -n "."
-    sleep 1
-done
-echo ""
+    echo -e "${YELLOW}--------------------------------------------------${NC}"
+    echo -e "${GREEN}your web Tunnel is live!${NC}"
+    echo -e "${CYAN}URL: ${CF_URL}${NC}"
+    echo -e "${YELLOW}--------------------------------------------------${NC}"
+fi
 
-touch /home/container/qemu_cmd.txt
-
+sleep 2
 cd /home/container
 echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
 
+MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
-exec /bin/bash -c "${STARTUP}"
+eval exec ${MODIFIED_STARTUP}
