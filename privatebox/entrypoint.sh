@@ -56,4 +56,4 @@ echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}
 
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g} -e 's/}}/}/g')
 
-eval exec "$MODIFIED_STARTUP"
+eval exec $MODIFIED_STARTUP
