@@ -12,6 +12,7 @@ RUN apt update && apt install -y \
     telnet \
     python3-numpy \
     wget \
+    netcat-openbsd \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
