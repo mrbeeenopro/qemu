@@ -46,4 +46,9 @@ export FORWARD_PORTS="${FORWARD_PORTS//\$SERVER_PORT/$SERVER_PORT}"
 MODIFIED_STARTUP="${STARTUP//\{\{SERVER_PORT\}\}/$SERVER_PORT}"
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
-eval exec ${MODIFIED_STARTUP}
+echo -e "${GREEN}[+] Starting QEMU in background...${NC}"
+eval ${MODIFIED_STARTUP} &
+
+sleep 3
+echo -e "${GREEN}[+] Connecting to Serial Port...${NC}"
+nc 127.0.0.1 53211
