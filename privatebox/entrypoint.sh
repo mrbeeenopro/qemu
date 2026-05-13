@@ -41,6 +41,8 @@ fi
 sleep 2
 cd /home/container
 echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
+export FORWARD_PORTS="${FORWARD_PORTS//\$\{SERVER_PORT\}/$SERVER_PORT}"
+export FORWARD_PORTS="${FORWARD_PORTS//\$SERVER_PORT/$SERVER_PORT}"
 MODIFIED_STARTUP="${STARTUP//\{\{SERVER_PORT\}\}/$SERVER_PORT}"
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
