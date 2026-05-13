@@ -49,11 +49,10 @@ for i in {1..30}; do
 done
 echo ""
 
-# Tiếp tục các bước khởi động QEMU
-sleep 1
+touch /home/container/qemu_cmd.txt
+
 cd /home/container
 echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
 
-MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g} -e 's/}}/}/g')
 
-eval exec $MODIFIED_STARTUP
+exec /bin/bash -c "${STARTUP}"
