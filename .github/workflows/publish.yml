@@ -1,4 +1,4 @@
-name: Build and Push QEMU Image
+name: Build and Push QEMU Images
 
 on:
   push:
@@ -26,9 +26,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+
+      - name: Build and push 'box' image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./box
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:box
+
+      - name: Build and push 'privatebox' image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./privatebox
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:privatebox
