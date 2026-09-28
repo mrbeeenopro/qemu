@@ -52,14 +52,20 @@ echo -e "${GREEN}[+] Starting QEMU in background...${NC}"
 eval ${MODIFIED_STARTUP} &
 QEMU_PID=$!
 
-shutdown_vm() {
-    echo -e "\n${YELLOW}[!] Received stop signal. waiting for vm shutdown..."
 
-    if command -v socat &> /dev/null; then
-        echo "system_powerdown" | socat - UNIX-CONNECT:qemu-monitor.sock 2>/dev/null
-    elif command -v nc &> /dev/null; then
-        echo "system_powerdown" | nc -U qemu-monitor.sock 2>/dev/null
-    fi
+shutdown_vm() {
+    echo -e "\n${YELLOW}[!] Received stop signal. Sending ACPI system_powerdown via QEMU Unix socket...${NC}"
+
+    python3 -c '
+import socket
+try:
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect("qemu-monitor.sock")
+    s.sendall(b"system_powerdown\n")
+    s.close()
+except Exception as e:
+    print("Error sending powerdown:", e)
+' 2>/dev/null
     
     echo -e "${GREEN}[+] Waiting for VM to gracefully shutdown via ACPI...${NC}"
     local count=0
