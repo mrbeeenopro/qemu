@@ -40,3 +40,10 @@ jobs:
           context: ./privatebox
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:privatebox
+
+      - name: Build and push 'devbox' image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./devbox
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:devbox
