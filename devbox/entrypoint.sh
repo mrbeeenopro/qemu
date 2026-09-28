@@ -60,7 +60,7 @@ trap shutdown_vm SIGTERM SIGINT
 sleep 3
 echo -e "${GREEN}[+] Connecting to Serial Console...${NC}"
 
-socat -,raw,echo=0 tcp:127.0.0.1:53211 &
+socat - tcp:127.0.0.1:53211 &
 SOCAT_PID=$!
 
 wait $QEMU_PID 2>/dev/null
