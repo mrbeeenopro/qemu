@@ -10,6 +10,7 @@ RUN apt update && apt install -y \
     python3 \
     git \
     telnet \
+    socat \
     netcat-openbsd \
     python3-numpy \
     wget \
