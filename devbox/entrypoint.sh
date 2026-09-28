@@ -28,10 +28,13 @@ fi
 sleep 2
 cd /home/container
 
+
 export FORWARD_PORTS="${FORWARD_PORTS//\$\{SERVER_PORT\}/$SERVER_PORT}"
 export FORWARD_PORTS="${FORWARD_PORTS//\$SERVER_PORT/$SERVER_PORT}"
 MODIFIED_STARTUP="${STARTUP//\{\{SERVER_PORT\}\}/$SERVER_PORT}"
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+
+MODIFIED_STARTUP="${MODIFIED_STARTUP//-monitor stdio/}"
 
 MONITOR_PORT=45454
 MODIFIED_STARTUP="${MODIFIED_STARTUP//-monitor unix:qemu-monitor.sock,server,nowait/-monitor tcp:127.0.0.1:${MONITOR_PORT},server,nowait}"
@@ -40,7 +43,6 @@ MODIFIED_STARTUP="${MODIFIED_STARTUP//-monitor unix:qemu-monitor.sock,server,now
 echo -e "${GREEN}[+] Starting QEMU...${NC}"
 eval ${MODIFIED_STARTUP} &
 QEMU_PID=$!
-
 shutdown_vm() {
     echo -e "\n${YELLOW}[!] Sending ACPI system_powerdown to QEMU Monitor...${NC}"
     echo "system_powerdown" | nc 127.0.0.1 ${MONITOR_PORT} 2>/dev/null
