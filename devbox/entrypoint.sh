@@ -47,7 +47,6 @@ shutdown_vm() {
     echo -e "\n${YELLOW}[!] Sending ACPI system_powerdown to QEMU Monitor...${NC}"
     echo "system_powerdown" | nc 127.0.0.1 ${MONITOR_PORT} 2>/dev/null
     
-    # Chờ VM tắt mềm tối đa 30 giây
     local count=0
     while kill -0 $QEMU_PID 2>/dev/null; do
         sleep 2
@@ -62,7 +61,6 @@ trap shutdown_vm SIGTERM SIGINT
 sleep 3
 echo -e "${GREEN}[+] Connecting to Serial Console...${NC}"
 
-socat - tcp:127.0.0.1:53211 &
-SOCAT_PID=$!
+nc 127.0.0.1 53211
 
 wait $QEMU_PID 2>/dev/null
