@@ -47,6 +47,7 @@ export FORWARD_PORTS="${FORWARD_PORTS//\$\{SERVER_PORT\}/$SERVER_PORT}"
 export FORWARD_PORTS="${FORWARD_PORTS//\$SERVER_PORT/$SERVER_PORT}"
 MODIFIED_STARTUP="${STARTUP//\{\{SERVER_PORT\}\}/$SERVER_PORT}"
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+
 MONITOR_PORT=45454
 MODIFIED_STARTUP="${MODIFIED_STARTUP//-monitor unix:qemu-monitor.sock,server,nowait/-monitor tcp:127.0.0.1:${MONITOR_PORT},server,nowait}"
 
@@ -58,7 +59,6 @@ echo -e "${GREEN}[+] Starting QEMU in background...${NC}"
 eval ${MODIFIED_STARTUP} &
 QEMU_PID=$!
 
-#  SIGTERM / SIGINT signal
 shutdown_vm() {
     echo -e "\n${YELLOW}[!] Received stop signal. Sending ACPI system_powerdown to QEMU Monitor (TCP 127.0.0.1:${MONITOR_PORT})...${NC}"
     
@@ -81,13 +81,13 @@ shutdown_vm() {
     exit 0
 }
 
+
 trap shutdown_vm SIGTERM SIGINT
 
 sleep 3
 echo -e "${GREEN}[+] Connecting to Serial Port... (Console output active)${NC}"
-
-
 while kill -0 $QEMU_PID 2>/dev/null; do
-    nc 127.0.0.1 53211
-    sleep 1
-done
+    nc 127.0.0.1 53211 || sleep 2
+done &
+
+wait $QEMU_PID 2>/dev/null
