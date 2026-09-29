@@ -81,6 +81,15 @@ shutdown_vm() {
     exit 0
 }
 
+reboot_vm() {
+    echo -e "\n${CYAN}[!] Received reboot signal (SIGHUP). Sending system_reset to QEMU Monitor...${NC}"
+    
+    if command -v nc &> /dev/null; then
+        echo -e "system_reset" | nc 127.0.0.1 ${MONITOR_PORT} 2>/dev/null
+    fi
+    
+    echo -e "${GREEN}[+] VM reset command sent successfully.${NC}"
+}
 
 trap shutdown_vm SIGTERM SIGINT
 
