@@ -19,42 +19,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-FROM --platform=$TARGETOS/$TARGETARCH debian:trixie-slim
-ARG         TARGETARCH
-LABEL       author="Mrbeenopro" maintainer="hi@mrbeenopro.com"
-LABEL       org.opencontainers.image.source="https://github.com/mrbeeenopro/qemu"
-LABEL       org.opencontainers.image.licenses=MIT
+FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LIBGUESTFS_BACKEND=direct
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        wget \
-        curl \
-        aria2 \
-        ca-certificates \
-        openssl \
-        qemu-utils \
-        libguestfs-tools \
-        guestfs-tools \
-        cloud-guest-utils \
-        fdisk \
-        gdisk \
-        parted \
-        e2fsprogs \
-        xfsprogs \
-        btrfs-progs \
-        dosfstools \
-        xz-utils \
-        zstd \
-        unzip \
-        jq \
-        git \
-        linux-image-${TARGETARCH:-amd64} && \
-    chmod 0644 /boot/vmlinuz* 2>/dev/null || true && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    genisoimage \
+    aria2 \
+    qemu-utils \
+    ca-certificates \
+    curl \
+    wget \
+    openssl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /mnt/server
 CMD ["/bin/bash"]
+
