@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH debian:trixie-slim
+FROM --platform=$TARGETOS/$TARGETARCH debian:trixie-slim
 LABEL       author="Mrbeenopro" maintainer="hi@mrbeenopro.com"
 
 LABEL       org.opencontainers.image.source="https://github.com/mrbeeenopro/qemu"
