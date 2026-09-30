@@ -47,3 +47,11 @@ jobs:
           context: ./devbox
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:devbox
+
+      - name: Build and push 'Installer' image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Installer
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:Installer
+
