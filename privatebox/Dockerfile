@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 RUN apt update && apt install -y \
     qemu-system-x86 \
@@ -10,9 +10,10 @@ RUN apt update && apt install -y \
     python3 \
     git \
     telnet \
+    socat \
+    netcat-openbsd \
     python3-numpy \
     wget \
-    netcat-openbsd \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
