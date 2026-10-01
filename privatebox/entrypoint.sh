@@ -6,6 +6,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' 
 USE_CLOUDFLARE=true
+
 echo -e "${GREEN}[+] Initializing environment..."
 
 cd /home/container
@@ -30,7 +31,7 @@ if [ "$USE_CLOUDFLARE" = "true" ]; then
     echo -e "${CYAN}[+] Starting TryCloudflare Tunnel...${NC}"
     cloudflared tunnel --url http://localhost:6080 --no-autoupdate > /home/container/cloudflare.log 2>&1 &
     
-    sleep 5
+    sleep 10
     CF_URL=$(grep -o 'https://[-0-9a-z]*\.trycloudflare.com' /home/container/cloudflare.log)
     echo -e "${YELLOW}--------------------------------------------------${NC}"
     echo -e "${GREEN}your web Tunnel is live!${NC}"
@@ -40,15 +41,62 @@ fi
 
 sleep 2
 cd /home/container
-echo -e "${GREEN}[+] Entering QEMU Console. You can type your commands now!${NC}"
+echo -e "${GREEN}[+] Preparing QEMU Startup...${NC}"
+
 export FORWARD_PORTS="${FORWARD_PORTS//\$\{SERVER_PORT\}/$SERVER_PORT}"
 export FORWARD_PORTS="${FORWARD_PORTS//\$SERVER_PORT/$SERVER_PORT}"
 MODIFIED_STARTUP="${STARTUP//\{\{SERVER_PORT\}\}/$SERVER_PORT}"
 MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
-echo -e "${GREEN}[+] Starting QEMU in background...${NC}"
+MONITOR_PORT=45454
+MODIFIED_STARTUP="${MODIFIED_STARTUP//-monitor unix:qemu-monitor.sock,server,nowait/-monitor tcp:127.0.0.1:${MONITOR_PORT},server,nowait}"
+
+if [[ ! "$MODIFIED_STARTUP" =~ "-monitor" ]]; then
+    MODIFIED_STARTUP="${MODIFIED_STARTUP} -monitor tcp:127.0.0.1:${MONITOR_PORT},server,nowait"
+fi
+
+echo -e "${GREEN}[+] Starting vm in background...${NC}"
 eval ${MODIFIED_STARTUP} &
+QEMU_PID=$!
+
+shutdown_vm() {
+    echo -e "\n${YELLOW}[!] Received stop signal. waiting vm..."
+    
+    if command -v nc &> /dev/null; then
+        echo -e "system_powerdown" | nc 127.0.0.1 ${MONITOR_PORT} 2>/dev/null
+    fi
+    
+    echo -e "${GREEN}[+] Waiting for VM to gracefully shutdown...${NC}"
+    local count=0
+    while kill -0 $QEMU_PID 2>/dev/null; do
+        sleep 2
+        count=$((count + 2))
+        if [ $count -ge 30 ]; then
+            echo -e "${RED}[!] Shutdown timeout. Forcing stop...${NC}"
+            kill -KILL $QEMU_PID 2>/dev/null
+            break
+        fi
+    done
+    echo -e "${GREEN}[+] Container stopped safely.${NC}"
+    exit 0
+}
+
+reboot_vm() {
+    echo -e "\n${CYAN}[!] Received reboot signal (SIGHUP). Sending system_reset to QEMU Monitor...${NC}"
+    
+    if command -v nc &> /dev/null; then
+        echo -e "system_reset" | nc 127.0.0.1 ${MONITOR_PORT} 2>/dev/null
+    fi
+    
+    echo -e "${GREEN}[+] VM reset command sent successfully.${NC}"
+}
+
+trap shutdown_vm SIGTERM SIGINT
 
 sleep 3
-echo -e "${GREEN}[+] Connecting to Serial Port...${NC}"
-nc 127.0.0.1 53211
+echo -e "${GREEN}[+] Connecting to Serial Port... (Console output active)${NC}"
+while kill -0 $QEMU_PID 2>/dev/null; do
+    nc 127.0.0.1 53211 || sleep 2
+done &
+
+wait $QEMU_PID 2>/dev/null
